@@ -1,20 +1,3 @@
-/*
-Licensed to the Apache Software Foundation (ASF) under one
-or more contributor license agreements.  See the NOTICE file
-distributed with this work for additional information
-regarding copyright ownership.  The ASF licenses this file
-to you under the Apache License, Version 2.0 (the
-"License"); you may not use this file except in compliance
-with the License.  You may obtain a copy of the License at
-  http://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on an
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations
-under the License.
-*/
-
 package main
 
 import (
@@ -25,41 +8,46 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
-// SimpleChaincode example simple Chaincode implementation
+// SimpleChaincode tipo de objecto
 type SimpleChaincode struct {
 }
-
+// declacaracion de parametros de entrada y salida
+//entrada:stub     tipo shim.ChaincodeStubInterface
+//        function tipo string
+//        args     tipo []string   
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	fmt.Printf("Init called, initializing chaincode")
 	
-	var A, B string    // Entities
-	var Aval, Bval int // Asset holdings
-	var err error
-
+	var A, B string    // declacion de entidades 
+	var Aval, Bval int // valor de cada entidad
+	var err error      // valores de error
+    // si la variable args tiene mas o menos de 4 argumentos , se define un error
 	if len(args) != 4 {
-		return nil, errors.New("Incorrect number of arguments. Expecting 4")
+		return nil, errors.New("Incorrect number of arguments. Expecting 4")//creacion del error tipo string
 	}
 
-	// Initialize the chaincode
-	A = args[0]
-	Aval, err = strconv.Atoi(args[1])
-	if err != nil {
+	// asignacion de variables 
+	A = args[0] // nombre de la entidad
+	Aval, err = strconv.Atoi(args[1])	//Validacion del valor de la entidad A y asignacion del valor
+  
+	if err != nil {// si hubo error en la validacion del numero de entidad A, publica q tipo de error hubo
 		return nil, errors.New("Expecting integer value for asset holding")
 	}
-	B = args[2]
-	Bval, err = strconv.Atoi(args[3])
-	if err != nil {
+	B = args[2]// asignacion de variables 
+	Bval, err = strconv.Atoi(args[3])// nombre de la entidad
+	
+	if err != nil {// si hubo error en la validacion del numero de entidad A, publica q tipo de error hubo
 		return nil, errors.New("Expecting integer value for asset holding")
 	}
-	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
+	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)// muestra la el valor de las entidades
 
 	// Write the state to the ledger
-	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
+	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))//registra el las actividades con un id unico
 	if err != nil {
 		return nil, err
 	}
 
-	err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
+	err = stub.PutState(B, []byte(strconv.Itoa(Bval)))//registra el las actividades con un id unico
 	if err != nil {
 		return nil, err
 	}
@@ -67,55 +55,60 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	return nil, nil
 }
 
-// Transaction makes payment of X units from A to B
+// Transaction makes payment of X units from A to B//creacion de transaccionesiones  de A - B
+//recibe 2 variables 
+// Stub
+// args
 func (t *SimpleChaincode) invoke(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	fmt.Printf("Running invoke")
 	
-	var A, B string    // Entities
-	var Aval, Bval int // Asset holdings
-	var X int          // Transaction value
-	var err error
-
+	var A, B string    // declacion de entidades 
+	var Aval, Bval int // valor de cada entidad
+	var X int          // valor de transaccion
+	var err error      // valores de error
+ // si la variable args tiene mas o menos de 4 argumentos , se define un error
 	if len(args) != 3 {
-		return nil, errors.New("Incorrect number of arguments. Expecting 3")
+		return nil, errors.New("Incorrect number of arguments. Expecting 3")//creacion del error tipo string
 	}
-
+//asignacion de las variables de las variables de entrada al nombre de las entidades
 	A = args[0]
 	B = args[1]
 
 	// Get the state from the ledger
 	// TODO: will be nice to have a GetAllState call to ledger
-	Avalbytes, err := stub.GetState(A)
+	Avalbytes, err := stub.GetState(A)//devuelve la cadena de bytes asociados a la llave(A)
+	
 	if err != nil {
-		return nil, errors.New("Failed to get state")
+		return nil, errors.New("Failed to get state")//crea mensaje de error de la obtencion de la llave
 	}
+	
 	if Avalbytes == nil {
-		return nil, errors.New("Entity not found")
+		return nil, errors.New("Entity not found")// no puede encontrar la entidad buscada
 	}
-	Aval, _ = strconv.Atoi(string(Avalbytes))
+	Aval, _ = strconv.Atoi(string(Avalbytes))//extrae el valor de la variable Avalbytes
 
-	Bvalbytes, err := stub.GetState(B)
+	Bvalbytes, err := stub.GetState(B)//devuelve la cadena de bytes asociados a la llave(B)
 	if err != nil {
-		return nil, errors.New("Failed to get state")
+		return nil, errors.New("Failed to get state")//crea mensaje de error de la obtencion de la llave
 	}
 	if Bvalbytes == nil {
-		return nil, errors.New("Entity not found")
+		return nil, errors.New("Entity not found")// no puede encontrar la entidad buscada
 	}
-	Bval, _ = strconv.Atoi(string(Bvalbytes))
+	Bval, _ = strconv.Atoi(string(Bvalbytes))//extrae el valor de la variable Avalbytes
 
 	// Perform the execution
-	X, err = strconv.Atoi(args[2])
-	Aval = Aval - X
-	Bval = Bval + X
-	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
+	X, err = strconv.Atoi(args[2])//extraer el valor de transaccion
+	Aval = Aval - X // se realiza la sustraccion de los elementos de A
+	Bval = Bval + X // se realiza la adiccion de los elementos de B
+	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)// se muestra los nuevos valores de la trasaccion 
 
 	// Write the state back to the ledger
-	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
+	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))//se guarda los nuevos valores de las entidades para A
 	if err != nil {
 		return nil, err
 	}
 
-	err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
+	err = stub.PutState(B, []byte(strconv.Itoa(Bval)))//se guarda los nuevos valores de las entidades para B
 	if err != nil {
 		return nil, err
 	}
@@ -164,6 +157,8 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	return nil, errors.New("Received unknown function invocation")
 }
 
+
+
 func (t* SimpleChaincode) Run(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	fmt.Printf("Run called, passing through to Invoke (same function)")
 	
@@ -183,6 +178,8 @@ func (t* SimpleChaincode) Run(stub shim.ChaincodeStubInterface, function string,
 
 	return nil, errors.New("Received unknown function invocation")
 }
+
+
 
 // Query callback representing the query of a chaincode
 func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
