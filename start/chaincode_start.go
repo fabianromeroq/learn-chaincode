@@ -118,18 +118,18 @@ func (t *SimpleChaincode) invoke(stub shim.ChaincodeStubInterface, args []string
 
 // Deletes an entity from state
 func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	fmt.Printf("Running delete")
-	
+	fmt.Printf("Running delete")// indicador que la eliminacion empezo
+	// verificacion que los datos de entrada sean completos 
 	if len(args) != 1 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 3")
 	}
 
-	A := args[0]
+	A := args[0]// almacena que entidad quiere borrar sus valores
 
 	// Delete the key from the state in ledger
-	err := stub.DelState(A)
-	if err != nil {
-		return nil, errors.New("Failed to delete state")
+	err := stub.DelState(A)// llamado de la funcion de eliminacion
+	if err != nil { 
+		return nil, errors.New("Failed to delete state")// genra un estado de error si la eliminacion no es completada
 	}
 
 	return nil, nil
@@ -139,7 +139,10 @@ func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string
 // This chaincode will manage two accounts A and B and will transfer X units from A to B upon invoke
 func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	fmt.Printf("Invoke called, determining function")
-	
+	// la funcion recibe tres argumentos que son 
+	//stub
+	//args y 
+	// tipo de funcion por el cual lo direcciona a las diferentes funciones
 	// Handle different functions
 	if function == "invoke" {
 		// Transaction makes payment of X units from A to B
@@ -161,7 +164,11 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 
 func (t* SimpleChaincode) Run(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	fmt.Printf("Run called, passing through to Invoke (same function)")
-	
+	// la funcion recibe tres argumentos que son 
+	//stub
+	//args y 
+	// tipo de funcion por el cual lo direcciona a las diferentes funciones
+	// Handle different functions
 	// Handle different functions
 	if function == "invoke" {
 		// Transaction makes payment of X units from A to B
@@ -183,33 +190,35 @@ func (t* SimpleChaincode) Run(stub shim.ChaincodeStubInterface, function string,
 
 // Query callback representing the query of a chaincode
 func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+  //inicializacion de las colas
 	fmt.Printf("Query called, determining function")
-	
+	// verificacion de que la funcion llamada sea query
 	if function != "query" {
 		fmt.Printf("Function is query")
-		return nil, errors.New("Invalid query function name. Expecting \"query\"")
+		return nil, errors.New("Invalid query function name. Expecting \"query\"") //retornar error
 	}
 	var A string // Entities
-	var err error
-
+	var err error// declaracion de la entidad
+// verificacion de los argumentos 
 	if len(args) != 1 {
 		return nil, errors.New("Incorrect number of arguments. Expecting name of the person to query")
 	}
-
+// asignacion del nombre de la entidad
 	A = args[0]
 
 	// Get the state from the ledger
-	Avalbytes, err := stub.GetState(A)
+	Avalbytes, err := stub.GetState(A)// obtencion del valor de la entidad
+	//verificacion si hubo error en la obtencion del valor de la entidad
 	if err != nil {
 		jsonResp := "{\"Error\":\"Failed to get state for " + A + "\"}"
 		return nil, errors.New(jsonResp)
 	}
-
+    //verificacion del valor de la entidad
 	if Avalbytes == nil {
 		jsonResp := "{\"Error\":\"Nil amount for " + A + "\"}"
 		return nil, errors.New(jsonResp)
 	}
-
+// publicacion de los datos de la entidad y su valor 
 	jsonResp := "{\"Name\":\"" + A + "\",\"Amount\":\"" + string(Avalbytes) + "\"}"
 	fmt.Printf("Query Response:%s\n", jsonResp)
 	return Avalbytes, nil
